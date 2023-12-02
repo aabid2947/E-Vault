@@ -28,8 +28,8 @@ class Blockchain_database(models.Model):
     def get_previous_block_hash(self,index):
        try:
             # Retrieve the stored block with an index one less than the current block
-            previous_block =  Blockchain_database.objects.get(index=index)
-            return previous_block.block_hash
+            previous_block =  Blockchain_database.objects.filter(index__icontains=index)
+            return previous_block[0].block_hash
        except Blockchain_database.DoesNotExist:
             return None
         
@@ -63,16 +63,6 @@ class Nodes(models.Model):
     class Meta:
         db_table = 'nodes'
 
-class Zero_block(models.Model):
-    no_of_blocks = models.IntegerField()
-    index = models.IntegerField()
-    proof = models.IntegerField()
-
-    def __str_(self):
-        return self.no_of_blocks
-    
-    class Meta:
-        db_table = 'Info'
 
     
 

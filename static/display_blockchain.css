@@ -1,0 +1,43 @@
+.blockchain_container{
+    display: grid;
+    grid-template-rows: repeat(1fr);
+    place-content: center;
+    font-family: serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: rgba(30, 18, 18, 0.538);
+}
+
+.block_container{
+    width: 60vh;
+}
+
+.block{
+    margin: 0;
+    padding: 0;
+    border: 1px solid rgb(60, 57, 57);
+    border-radius: 20px;
+    box-shadow: 5px 5px 20px  rgba(34, 34, 34, 0.489),
+                inset -5px -5px 20px  rgba(234, 231, 231, 0.652);
+}
+.chain{
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.block_content{
+    margin: 5px;
+    padding: 10px;
+    list-style: none;
+}
+
+
+
+.block_content li{
+    margin: 5px;
+    word-wrap: break-word;
+}

@@ -36,16 +36,15 @@ class Blockchain:
     # This function is created
     # to add further blocks
     # into the chain
-    def create_block(self,proof, previous_hash,data,private_key,hash,index):
+    def create_block(self,timestamp,index, block_data,block_hash,proof_of_work,previous_block_hash,transaction):
         block = {
-                'private_key':private_key,
+                'timestamp': timestamp,
                 'index' : index,
-                'timestamp': str(datetime.datetime.now()),
-                'hash':hash,
-                'proof': proof,
-                'data':data, #data to be stored
-                'previous_hash':previous_hash,
-                'hash':None,
+                'block_data':block_data,
+                'block_hash': block_hash,
+                'proof_of_work':proof_of_work, #data to be stored
+                'previous_block_hash':previous_block_hash,
+                'transaction':transaction,
         }
       
         self.chain.append(block)
@@ -78,13 +77,6 @@ class Blockchain:
         # into a JSON-formatted string. The sort_keys=True parameter is used to ensure that the keys in the JSON string are sorted alphabetically
 
         return hashlib.sha256(encoded_block).hexdigest()
-    
-    
-    def create_private_key_for_first_block(self):
-         # Step 1: Choose Elliptic Curve
-        curve = SECP112r1
-        private_key = SigningKey.generate(curve=curve)
-        return private_key.to_string().hex()
         
     def create_private_key(self):
         # Step 1: Choose Elliptic Curve
@@ -107,6 +99,7 @@ class Blockchain:
     
     # Create private hash to identify nodes
     def create_node_ID(self,username):
+        print(93927)
         namespace_uuid = uuid.UUID('6ba7b811-9dad-11d1-80b4-00c04fd430c8')
         node_ID  = str(uuid.uuid3(namespace_uuid,username))
         print(node_ID)

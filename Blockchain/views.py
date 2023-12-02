@@ -26,8 +26,6 @@ blockchain_database = Blockchain_database()
 # instance of Nodes model
 node = Nodes()
 
-# instance of zero block
-zero_block = Zero_block()
 
 
 
@@ -64,7 +62,9 @@ def sign_Up(request):
             
             # Handle creation of node
             if request.POST['sign_up_asnode'] == 'yes':
-                create_node(username,email)
+                new_node = create_node(username,email)
+                if type(new_node) == str:
+                    return HttpResponse(new_node)
             
             # create a user in django
             myuser = User.objects.create_user(username,email,password)
@@ -109,30 +109,40 @@ def logOut(request):
 
 # Creating node to handle blockchain
 def create_node(username,email):
-    try:     
-        node_ID = blockchain.create_node_ID(username)
-        blockchain_copy = [{
-        'timestamp':'',
-        'index':'',
-        'block_data':''
-        }]
-        for block in Blockchain_database.objects.all():
-                   
-           blockchain_copy['timestamp'] = block.timestamp
-           blockchain_copy['index'] = block.index
-           blockchain_copy['block_data'] = block.block_data
-
-        new_node = Nodes(node_name=username,node_ID=node_ID,Email=email,blockchain_copy=blockchain_copy)
+    try:
+        blockchain = Blockchain()
+        node_ID = blockchain.create_node_ID(username=username)
+        new_node = Nodes(
+                         node_name=username,
+                         node_ID=node_ID,
+                         Email=email,
+                         blockchain_copy=[]
+                         )
+        
+        # providing every block to node
+        blockchain_copy =Blockchain_database.objects.all()
+        print(blockchain)
+        for block in blockchain_copy:
+            block_copy = blockchain.create_block(
+                                                 timestamp=block.timestamp,
+                                                 index=block.index,
+                                                 block_data=block.block_data,
+                                                 block_hash=block.block_hash,
+                                                 proof_of_work=block.proof_of_work,
+                                                 previous_block_hash=block.previous_block_hash,
+                                                 transaction=block.transaction
+                                                 )
+        new_node.blockchain_copy.append(block_copy)
         new_node.save()
              
     except Exception as error:
-               return HttpResponse(f'Error creating node:{error}')
+               return f'Error creating node:{error}'
 
 # Handling uploading file on blockchain
 def vault_blockchain_view(request):
     # Retrieve the user instance
     user_instance = Users.objects.get(username=request.user)
-    
+
     if(str(request.user) == 'AnonymousUser'): 
         messages.success(request,'Please login first')
         return redirect('Home')
@@ -144,14 +154,26 @@ def vault_blockchain_view(request):
 
             # Create block 
             block = create_block(uploaded_file=uploaded_file,username=request.user,user_instance=user_instance)  
-            
+            if type(block) == str:
+                return HttpResponse(f'Error creating block: {block}')
             # storing block in a database
-            new_block = Blockchain_database(timestamp=block['timestamp'],block_data=block['data'],block_hash=block['hash'],previous_block_hash=block['previous_hash'],index=block['index'],transaction='Null',proof_of_work=block['proof'])
+            new_block = Blockchain_database(
+                                            timestamp=block['timestamp'],
+                                            block_data=block['block_data'],
+                                            block_hash=block['block_hash'],
+                                            previous_block_hash=block['previous_block_hash'],
+                                            index=block['index'],
+                                            transaction=block['transaction'],
+                                            proof_of_work=block['proof_of_work'])
             
             # sharing a copy of block with every node
-            # nodes = Nodes.objects.all()
-            # for node in nodes:
-            #     node.blockchain_copy.append(new_block)
+            nodes = Nodes.objects.all()
+            for node in nodes:
+                node.blockchain_copy.append(block)
+                node.save()    
+            
+            # saving changes
+            user_instance.save()  
 
             # saving new block
             new_block.save()
@@ -160,10 +182,17 @@ def vault_blockchain_view(request):
         except Exception as e:
             return HttpResponse(f'Error uploading block: {str(e)}')
 
+    # verify whether user is node or not
+    if Nodes.objects.filter(node_name__icontains = request.user):
+        isNode = True
+    else:
+        isNode = False    
+
     # getting all the files uer has uploaded  to pass as arg to frontend
     files_name = user_instance.file_name
     context = {
-        'files_name':files_name
+        'files_name':files_name,
+        'isNode':isNode
     }
     
     return render(request,'vault.html',context)
@@ -179,32 +208,42 @@ def create_block(uploaded_file,username,user_instance):
         
             # encode the content
             encoded_content = base64.b64encode(compress_file(file_content)).decode('utf-8')
-
+           
             # get previous block , proof and previous hash
-            zero_block = Zero_block.objects.filter(index__icontains=0)[0]
-            if zero_block.no_of_blocks is 0:
+            if Blockchain_database.objects.last() is None:
                 previous_block_hash ='0'
                 previous_proof = 1
                 index = 1
             else:
-               previous_block_hash = blockchain_database.get_previous_block_hash(zero_block.no_of_blocks)
+               previous_block_hash = blockchain_database.get_previous_block_hash(Blockchain_database.objects.last().index)
                previous_block = blockchain_database.get_block(previous_block_hash)
+               #verifying previous block
+               if verify_block(previous_block.index,previous_block.block_hash) is False: 
+                  return 'Block invalid'
+               
                previous_proof = previous_block.proof_of_work
-               index = zero_block.no_of_blocks + 1
+               index = Blockchain_database.objects.last().index + 1
             
             # create proof and privatekey
             proof = blockchain.proof_of_work(int(previous_proof))
             
             # Getting the username to update the info
             user = Users.objects.filter(username__icontains=username)
-    
             private_key = user[0].private_key
             amount = user[0].amount
             
             # Checking whether user have sufficient amount or not
             if amount >= 1:
                 # create block and store info 
-                block = blockchain.create_block(proof,previous_block_hash,json.dumps(encoded_content),private_key,"",index)
+                block  =  blockchain.create_block(
+                                                 timestamp=str(datetime.datetime.now()),
+                                                 index=index,
+                                                 block_data=json.dumps(encoded_content),
+                                                 block_hash="",
+                                                 proof_of_work=proof,
+                                                 previous_block_hash=previous_block_hash,
+                                                 transaction=None
+                                                 )
             else:
                 return ("Not Sufficient Amount")
 
@@ -215,7 +254,7 @@ def create_block(uploaded_file,username,user_instance):
             #adding hash and files to user database
             current_files = user_instance.file_name
             current_hashes = user_instance.block_hashes
-
+            
             # Making hash and file field an array 
             if current_hashes is None:
                current_hashes = []
@@ -229,16 +268,11 @@ def create_block(uploaded_file,username,user_instance):
             # store file name and hash in user database
             user_instance.file_name = current_files
             user_instance.block_hashes = current_hashes
-
+            
             # deduce 1ad
             user_instance.amount = amount -1
+        
             
-            # saving changes
-            user_instance.save()  
-            
-            # Increasing no of block 
-            zero_block.no_of_blocks = zero_block.no_of_blocks + 1
-            zero_block.save()
             return block
 
    except Exception as error:
@@ -253,8 +287,13 @@ def get_files(request,requested_file):
             for file,_hash in zip(user[0].file_name,user[0].block_hashes):
                 if file == requested_file:
                     file_name = file
-                    block_hash = _hash
-                    block_data = blockchain_database.get_block(block_hash).block_data
+                    block_hash = _hash              
+                    block = blockchain_database.get_block(block_hash)
+
+                    # verifying if block is valid or not 
+                    if verify_block(block.index,block.previous_block_hash):
+                        block_data = block.block_data
+
                     if block_data:
                         block_data = json.loads(block_data)
                         # Extract the file content 
@@ -275,5 +314,29 @@ def get_files(request,requested_file):
                 return HttpResponse(f"error in getting block: {error}")
     else:
         return HttpResponse("Upload Files")
+    
+# Validate block
+def verify_block(index,previous_block_hash):
+    if index == 1:
+        return True
+    else:
+        # get block
+        previous_block = Blockchain_database.objects.filter(block_hash__icontains = previous_block_hash)
+        if previous_block:
+            return True
+        else:
+            return False
+
+# displaying blockchain for nodes
+def display_blockchain(request):
+    try:
+        if Nodes.objects.filter(node_name__icontains = request.user):
+            blockchain = Blockchain_database.objects.all()
+            return render(request,'display_blocks.html',{'blockchain':blockchain})
+        else:
+            return HttpResponse("You are not autherize to see blockchain")
+    except Exception as error:
+       return HttpResponse(f'Error in getting blockchain:{error}')    
+
 
     

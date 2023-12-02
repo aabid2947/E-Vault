@@ -1,0 +1,35 @@
+.blockchain_container{
+    display: grid;
+    grid-template-rows: repeat(1fr);
+    place-content: center;
+}
+
+.block_container{
+    width: 30vh;
+}
+
+.block{
+    margin: 0;
+    padding: 0;
+    height: 30vh;
+    width: 30vh;
+    border: 2px solid black;
+    border-radius: 20px;
+    box-shadow: 10px 10px 60px rgba(34, 34, 34, 0.489),
+                inset -10px -10px 60px rgba(234, 231, 231, 0.652);
+}
+.chain{
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20vh;
+    width: 30vh;
+    overflow: hidden;
+
+}
+
+img{
+    margin: 0;
+}

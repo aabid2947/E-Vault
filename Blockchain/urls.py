@@ -9,6 +9,6 @@ urlpatterns = [
    path('get_your_files/<str:requested_file>/',get_files,name='get_files'),
    path('login/',logIn,name='logIn'),
    path('signup/', sign_Up, name='sign_Up'),
-   path('logout/',logOut,name='logout')
-
+   path('logout/',logOut,name='logout'),
+   path('display_blockchain/',display_blockchain,name='display_blockchain')
 ]
