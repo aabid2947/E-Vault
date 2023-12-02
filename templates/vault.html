@@ -1,0 +1,80 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blockchain</title>
+    <link rel="stylesheet" href="{% static 'navbar.css' %}" />
+  </head>
+  <body>
+   
+    <nav class="navbar">
+      <div class="container">
+        <a class="navbar-brand" href="#">E-vault</a>
+        <div class="navbar-links">
+          <ul>
+            <li><a  class="active">{{request.user}}</a></li>
+            <li><a href="#">Link</a></li>
+            {% comment %}
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle">Dropdown</a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Action</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><hr /></li>
+                <li><a href="#">Something else here</a></li>
+              </ul>
+            </li>
+            {% endcomment %}
+            <li><a href="#" class="disabled">Disabled</a></li>
+          </ul>
+        </div>
+        <div class="navbar-buttons">
+         <a href="{% url 'logout' %}"> 
+          {% comment %} <button class="btn" id="login_button">Login</button> {% endcomment %}
+          <button class="btn btn-success" >Log out</button>
+        </a>
+        </div>
+      </div>
+    </nav>
+    <div
+      style="
+        width: 35vh;
+        height: 25vh;
+        margin: 5px;
+        font-size: 35px;
+        background-color: gray;
+      "
+    >
+      <form
+        method="post"
+        action="{% url 'vault_blockchain' %}"
+        enctype="multipart/form-data"
+      >
+        {% csrf_token %}
+        <input type="file" name="files" />
+        <button style="width: 60%; margin-left: 43px" type="submit">
+          Upload to E-Vault
+        </button>
+      </form>
+    </div>
+    
+    <div class="uploaded_files_container"> 
+        {% if files_name is not None %}
+          {% for file in files_name %}
+            <form method="post" action="{% url 'get_files' requested_file=file %}">
+              {% csrf_token %}
+              <button type="submit" class="uploaded_button">
+                  <div class="uploaded_files">
+                      <div class="blank">{{file}}</div>
+                      <div class="img"></div>
+                  </div>
+              </button>
+            </form>
+          {% endfor %}
+        {% endif %} 
+    </div> 
+ 
+  </body>
+</html>

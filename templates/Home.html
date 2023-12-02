@@ -1,0 +1,184 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blockchain</title>
+    <link rel="stylesheet" href="{% static 'navbar.css' %}" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container">
+        <a class="navbar-brand" href="#">E-vault</a>
+        <div class="navbar-links">
+          <ul>
+            <li><a href="#" class="active">Home</a></li>
+            <li><a href="#">Link</a></li>
+            {% comment %}
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle">Dropdown</a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Action</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><hr /></li>
+                <li><a href="#">Something else here</a></li>
+              </ul>
+            </li>
+            {% endcomment %}
+            <li><a href="#" class="disabled">Disabled</a></li>
+          </ul>
+        </div>
+        <div class="navbar-buttons">
+          <button class="btn" id="login_button">Login</button>
+          <button class="btn btn-success" id="sign_up">Sign Up</button>
+        </div>
+      </div>
+    </nav>
+
+     <h1>
+        Login to acces E-vault
+     </h1>
+
+    <form  id="signUp_form"
+    method="post"
+    action="{% url 'sign_Up' %}"
+    >
+    {% csrf_token %}
+      <div class="container_form">
+        <div class="userlogo_container">
+            <div style="display: flex; justify-content: center">
+              <img class="userlogo" src="assests/user.png" alt="" />
+            </div>
+            <div style="font-size: 20px">✖</div>
+          </div>
+        <div
+          class="createaccount_container"
+          style="display: flex; align-items: center; justify-content: center"
+        >
+          <div class="createaccount">Create Account</div>
+        </div>
+
+        <div>
+          <input
+            type="text"
+            class="username"
+            name="username"
+            placeholder="Username"
+          />
+        </div>
+        <div>
+          <input type="text" class="name" name="fname" placeholder="Name" />
+        </div>
+        <div>
+          <input type="email" class="email" name="email" placeholder="E-mail" />
+        </div>
+        <div>
+          <input
+            type="password"
+            class="password"
+            name="password"
+            placeholder="Password"
+          />
+        </div>
+
+        <div>
+          <input
+            type="password"
+            class="confirm_password"
+            name="confirm_password"
+            placeholder="Confirm Password"
+          />
+        </div>
+        <div>
+          <input
+            type="asnode"
+            class="confirm_password"
+            name="sign_up_asnode"
+            placeholder="Want to sign up as node?"
+          />
+        </div>
+        <div class="button_container">
+          <button id="sign_up_button" value="signup" type="submit">Sign Up</button>
+        </div>
+        <div></div>
+      </div>
+    </form>
+
+    {% comment %} handle login {% endcomment %}
+    
+    <form  id="login_form"
+    method="post"
+    action="{% url 'logIn' %}"
+    
+    >
+    {% csrf_token %}
+      <div class="container_form" style="height:42vh">
+        <div class="userlogo_container">
+            <div style="display: flex; justify-content: center">
+              <img style="margin-left:25px" class="userlogo" src="assests/user.png" alt="" />
+            </div>
+            <div style="font-size: 20px">✖</div>
+          </div>
+        <div
+          class="createaccount_container"
+          style="display: flex; align-items: center; justify-content: center"
+        >
+          <div class="createaccount">Sign In</div>
+        </div>
+
+        <div>
+          <input
+            type="text"
+            class="username"
+            name="username"
+            placeholder="Username"
+          />
+        </div>
+       
+        <div>
+          <input
+            type="password"
+            class="password"
+            name="password"
+            placeholder="Password"
+          />
+        </div>
+      
+
+       
+        <div class="button_container">
+          <button id="log_in_button" type="submit">Login</button>
+        </div>
+        <div></div>
+      </div>
+    </form>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const signup_form = document.getElementById('signUp_form');
+        const signup_button = document.getElementById('sign_up');
+        const sign_up_asnode = document.getElementById('sign_up_asnode_button');
+        const login_form = document.getElementById('login_form');
+        const login_button = document.getElementById('login_button');
+    
+        signup_button.addEventListener('click', () => {
+          login_form.style.marginTop = -9999 + "px"
+          signup_form.style.marginTop = 0 + "px";
+
+        });
+    
+        login_button.addEventListener('click', () => {
+          signup_form.style.marginTop = -9990 + "px";
+          login_form.style.marginTop = 0 + "px";
+        });
+
+        signup_button.addEventListener('click',()=>{
+
+
+        });
+
+         
+      });
+    </script>
+  </body>
+</html>
